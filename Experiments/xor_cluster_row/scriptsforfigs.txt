@@ -1,4 +1,5 @@
 Figure 3: analysis/plot.conditions.py
+    Note: stimuli examples were added manually
 Figure 4: analysis/plot.samples.py
 Figure 5: analysis/plot.distance.figs.py
 Figure 6: analysis/plot.stats.figs.py

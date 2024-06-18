@@ -3,13 +3,27 @@ import pandas as pd
 import numpy as np
 import time
 import sqlite3
-execfile('Imports.py')
+import os
+import pickle_compat
+
+pickle_compat.patch()
+
+def compile_file(filename):
+	with open(filename, encoding='utf-8') as f:
+		return compile(f.read(), filename, 'exec')
+
+cur_dir = 'Experiments/multiexpt_modeling'
+
+
+exec(compile_file(os.path.join(cur_dir,'Imports.py')))
+
 import Modules.Funcs as funcs
 from Modules.Classes import Simulation
 from Modules.Classes import CopyTweak
 from Modules.Classes import Packer
 from Modules.Classes import ConjugateJK13
 from Modules.Classes import RepresentJK13
+
 
 #Toggle 
 fit_weights = False
@@ -19,7 +33,7 @@ fiterror = False #Toggle if fitting error (as opposed to category choices)
 #dataname_def = 'catassign'
 
 WT_THETA = 1.5 #for the attention weight fitting
-datasets = ['catassign']#why are fits to this so slow? 110518 ok fixed!
+datasets = ['corner']#why are fits to this so slow? 110518 ok fixed!
 participant_def = 'all'
 unique_trials_def = 'all'
 nchunks = 1000 #number of CHTC instances to run
@@ -47,26 +61,26 @@ else:
     #dataname = dataname_def
     participant = participant_def
     unique_trials = unique_trials_def
-    runchunk = 1;
-#datasets = ['pooled','pooled-no1st','xcr','midbot','catassign','nosofsky1986','nosofsky1989','NGPMG1994']        
+    runchunk = 1
+#datasets = ['pooled','pooled-no1st','xcr','midbot']        
 
 
 #Check that output directory exists, otherwise create it
 pickledir = 'pickles/'
-outputdir = pickledir + 'newpickles/'
+outputdir = os.path.join(cur_dir, os.path.join(pickledir, 'newpickles/'))
 if not os.path.isdir(outputdir):
     os.system('mkdir ' + outputdir)
 
 
     
 for dataname in datasets:
-    execfile('validate_data.py')
+    exec(compile_file(os.path.join(cur_dir,'validate_data.py')))
         
-    print 'Grid Searching Data: ' + dataname
+    print('Grid Searching Data: ' + dataname)
     
     # get data from pickle
     with open(pickledir+src, "rb" ) as f:
-        trials = pickle.load( f )
+        trials = pickle.load( f,encoding='latin1' )
 
     if fiterror:
         #Force task to fit error, and appen err to dst filename
@@ -153,15 +167,15 @@ for dataname in datasets:
             startp[:,idx] = startp[:,idx] + min
         
         nfits = startp.shape[0]
-        print 'Fitting: ' + model_obj.model
-        print 'Total possible starting points: {}'.format(nfitsTotal)
-        print 'Running chunk {}, extracting starting points: [{}:{}]'.format(runchunk, chunkIdxStart, chunkIdxEnd)
-        print 'Total starting points extracted: ' + str(nfits)
+        print('Fitting: ' + model_obj.model)
+        print('Total possible starting points: {}'.format(nfitsTotal))
+        print('Running chunk {}, extracting starting points: [{}:{}]').format(runchunk, chunkIdxStart, chunkIdxEnd)
+        print('Total starting points extracted: ' + str(nfits))
         printcol = 20
         if nfits==0:
-            print 'No starting points extracted, moving on.\n'
+            print('No starting points extracted, moving on.\n')
             continue
-        print 'Fitting participants:'
+        print('Fitting participants:')
         #Run this for each participant, get the fits
         results[model_obj.model] = dict()        
         print_ct = 0
@@ -219,7 +233,7 @@ for dataname in datasets:
             #results[model_obj.model] = X
             #startp_dict = model_obj.params2dict(model_obj.clipper(inits))
 
-        print '\nDone fitting ' + model_obj.model + '.\n'
+        print('\nDone fitting ' + model_obj.model + '.\n')
         # print 'Final results: '
         # X = model_obj.params2dict(model_obj.clipper(results_best[0:-2]))
         # for k, v in X.items():
