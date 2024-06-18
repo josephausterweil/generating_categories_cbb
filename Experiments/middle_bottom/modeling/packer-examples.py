@@ -50,13 +50,13 @@ for i, k in enumerate(['Contrast Influence', 'Target Influence', 'Combination'])
     title = prefix[i] + ' ' + k
     h.set_title(title, fontsize = 11)
 
-    tradeoffstr = str(m.tradeoff)
+    tradeoffstr = str(m.theta_cntrst)
     if tradeoffstr in ['0.0', '1.0']:
         tradeoffstr = tradeoffstr[0]
     xlab  = '$\{'
-    xlab += 'c = ' + str(int(c)) + ','
-    xlab += '\gamma = ' + tradeoffstr  + ','
-    xlab += '\\theta = ' + str(int(theta))
+    xlab += '\\alpha = ' + str(int(c)) + ','
+    xlab += '\\theta_c = ' + tradeoffstr  + ','
+    xlab += '\\theta_t = ' + str(int(theta))
     xlab += '\}$'
     h.set_xlabel(xlab)
 
@@ -69,7 +69,4 @@ cbar.set_yticklabels(['Lowest\nProbability', 'Greatest\nProbability'])
 cbar.tick_params(length = 0)
 
 
-f.savefig('packer-examples.pdf', bbox_inches='tight', transparent=True)
-
-# path = '../../../Manuscripts/cogsci-2017/figs/packer-examples.pgf'
-# funcs.save_as_pgf(f, path)
+f.savefig(os.path.join(cur_dir,'packer-examples.pdf'), bbox_inches='tight', transparent=True)

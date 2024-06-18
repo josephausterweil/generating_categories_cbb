@@ -1,3 +1,4 @@
+Figure 1: modeling/packer-examples.py
 Figure 7: analysis/plot.conditions.py
 Figure 8: analysis/plot.samples.py
 Figure 9: analysis/plot.distance.figs.py
