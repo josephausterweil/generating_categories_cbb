@@ -1,0 +1,5 @@
+Figure 7: analysis/plot.conditions.py
+Figure 8: analysis/plot.samples.py
+Figure 9: analysis/plot.distance.figs.py
+Figure 10: analysis/plot.stats.figs.py
+Figure 11: analysis/plot.yranges.py
