@@ -17,9 +17,8 @@ def compile_file(filename):
 
 cur_dir = 'Experiments/multiexpt_modeling'
 
-
-
 exec(compile_file(os.path.join(cur_dir,'Imports.py')))
+exec(compile_file(os.path.join(cur_dir,'ImportModels.py')))
 
 import Modules.Funcs as funcs
 from Modules.Classes import Simulation
@@ -61,7 +60,7 @@ WT_THETA = 1.5
 MIN_LL = 1e-10
 
 # Specify default dataname
-dbname = 'experiments-pooled.db'#'experiments-5con.db'#raw data
+dbname = 'experiments-5con.db'#'experiments-5con.db'#raw data
 dataname_def = 'pooled'#'5con'#bestparms comes from here
 
 participant_def = 'all'
@@ -121,7 +120,9 @@ for i in alphas.columns:
 # merge categories into generation                                                                      
 generation = pd.merge(generation, participants, on='participant')
 generation = pd.merge(generation, mapping, on='condition')
-conditions = alphas.columns.values
+
+conditions = ['Corner_S', 'Corner_C']
+
 #Select only one participant
 def generateOnePerm(condition,generation,stimuli):
     #Generate only the first trial no betas
@@ -133,36 +134,57 @@ def generateOnePerm(condition,generation,stimuli):
     trials.task = 'generate'
     trials._update
     return trials
-
 vals = np.linspace(-1, 1, 200).tolist()
 space = np.fliplr(funcs.cartesian([vals, vals]))
-
+stimstep = [vals[1]-vals[0],vals[1]-vals[0]]
+lp = 60#80
+fs = 10
 nmodels = len(modelList)
 nconditions = len(conditions)
-f,ax = plt.subplots(nmodels,nconditions,figsize = (2*nconditions, 1.5*nmodels+1.5))
+adjplot = 1
 
+# cond_labs = ['Squares','Circles']
+plot_pre = ['(a)','(b)','(c)']
 
+#Plot model predictions
 for ci,condition in enumerate(conditions):
+    f,ax = plt.subplots(1,nmodels+adjplot,figsize = (3*nmodels, 2))
+    
+    if ci==0:
+        #Plot blank condition
+        blankA = [0,8,72,80]
+        funcs.plotclasses(ax[0], stimuli, blankA, [])
+        ax[0].set_title('(a) Corner',fontsize=fs)
+        #         ax[0].text(-2,1.5,'(a)',fontsize=fs+4)
+        # ax[0,1].text(-150,220,'(b)',fontsize=fs+4)
+        #         ax[1].set_title('(b)',fontsize=fs+4)
+    else:
+        funcs.plotclasses(ax[0], stimuli, [], [])    
+        ax[0].set_title('(a) Stimulus Space',fontsize=fs)
+
+
     B = []
     ps = []
     ll_trial = []
     trialppt = generateOnePerm(condition,generation,stimuli)
-    for m,model in enumerate(modelList):
-        lp = 80
-        fs = 20
-        if nmodels>1:
-            ax[m,0].set_ylabel('{}'.format(model.modelshort),rotation=0,labelpad=lp,fontsize=fs)
-            ax[0,ci].set_title('{}'.format(condition),fontsize=fs)
+    if 'wrap_ax' in generation.keys():
+        wrap_ax = generation.loc[(generation.trial==0)&(generation.condition==condition)][0:1].wrap_ax.values[0]
+    else:
+        wrap_ax = np.nan
+    if np.isnan(wrap_ax):
+        wrap_ax = None
+    for m,model in enumerate(modelList):        
+
+        if len(ax.shape)>1:
+            ax[0,m+adjplot].set_title('{} {}'.format(plot_pre[m+adjplot],model.modelshort),fontsize=fs)
+#             ax[ci,adjplot].set_ylabel('{}'.format(cond_labs[ci]),rotation=0,labelpad=lp,fontsize=fs)
         else:                    
-            ax[m].set_ylabel('{}'.format(model.modelshort),rotation=0,labelpad=lp,fontsize=fs)
+            ax[m+adjplot].set_title('{} {}'.format(plot_pre[m+adjplot],model.modelshort),fontsize=fs)
         
-        if model is PackerEuc: #Gotta do this because I haven't fit PackerEuc to all data yet
-            params = best_params[Packer.model]
-        else:
-            params = best_params[model.model]
+        params = best_params[model.model]
         #Plot heatmap for each model
         categories = [trialppt.stimuli[i,:] for i in trialppt.Set[0]['categories'] if len(i)>0]
-        ps += [model(categories,params,trialppt.stimrange).get_generation_ps(space,1,'generate')]
+        ps += [model(categories,params,trialppt.stimrange,stimstep=stimstep,wrap_ax=wrap_ax).get_generation_ps(space,1,'generate')]
         #Get lls for each trial step
         ll_trial += [trialppt.loglike(params=params,model=model,parmxform=False,whole_array=True)]
 
@@ -184,24 +206,36 @@ for ci,condition in enumerate(conditions):
         plotct += 1
         gps = funcs.gradientroll(ps_el,'roll')[:,:,0]
 #         plotVals += [gps]
-        ps_ElRange = gps.max()-gps.min();
+        ps_ElRange = gps.max()-gps.min()
         plotVals += [(gps-gps.min())/ps_ElRange]  #Change ps_ElRange to psRange to normalize across all models                                                                           
-        #Adjust Alphas for XOR for clarity of presentation
+        #Adjust Alphas for XOR and Corner for clarity of presentation
         if condition=='XOR':
             A = [[-.9,-.9],[-.65,-.65],[.65,.65],[.9,.9]]
-        if nmodels>1:
-            im = funcs.plotgradient(ax[i,ci], plotVals[i], A, [], cmap = 'Blues')
+        elif condition[:6]=='Corner':
+            A = [[-.9,-.9],[-.9,.9],[.9,-.9],[.9,.9]]
+
+        if len(ax.shape)>1:
+            im = funcs.plotgradient(ax[ci,i+adjplot], plotVals[i], A, [], cmap = 'Blues',alpha_col='red')
         else:
-            im = funcs.plotgradient(ax[ci], plotVals[i], A, [], cmap = 'Blues')
+            im = funcs.plotgradient(ax[i+adjplot], plotVals[i], A, [], cmap = 'Blues',alpha_col='red')
     #                     ax[i].set_ylabel('Trial {}'.format(trial))
 
-# add colorbar
-f.subplots_adjust(right=0.8)
-cbar = f.add_axes([0.83, 0.16, 0.03, 0.66])
-f.colorbar(im, cax=cbar, ticks = [0, 1])
-cbar.set_yticklabels(['Lowest\nProbability', 'Greatest\nProbability'])
-cbar.tick_params(length = 0)
 
-#Save fig
-if saveplots:
-    plt.savefig(os.path.join(cur_dir,'firstbetas.pdf'),bbox_inches='tight')
+
+    # plt.subplots_adjust(left=1)
+    #Remove axes for unused plots
+    # unusedax = [[1,0]]#[[0,1],[1,0],[1,1]]
+    # for x,y in unusedax:
+    #     ax[x,y].axis('off')
+
+    # add colorbar
+    f.subplots_adjust(right=0.8)
+    cbar = f.add_axes([0.83, 0.16, 0.03, 0.66])
+    f.colorbar(im, cax=cbar, ticks = [0, 1])
+    cbar.set_yticklabels(['Lowest\nProbability', 'Greatest\nProbability'],fontsize=fs)
+    cbar.tick_params(length = 0)
+
+    #Save fig
+    if saveplots:
+        plt.savefig(os.path.join(cur_dir,'firstbetas_{}.pdf'.format(condition)),bbox_inches='tight')
+    
