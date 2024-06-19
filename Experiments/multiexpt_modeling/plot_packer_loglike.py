@@ -14,7 +14,7 @@ def compile_file(filename):
 	with open(filename, encoding='utf-8') as f:
 		return compile(f.read(), filename, 'exec')
 	
-cur_dir = 'Experiments/cogpsych_code/'
+cur_dir = 'Experiments/multiexpt_modeling/'
 exec(compile_file(os.path.join(cur_dir,'Imports.py')))
 
 #execfile('Imports.py')
@@ -22,13 +22,10 @@ import Modules.Funcs as funcs
 from Modules.Classes import Simulation
 from Modules.Classes import Packer, CopyTweak
 
-# get trials pickle
-# pickle can be "pickles/all_data_e1_e2.p", "pickles/nosofsky1986.p"
+# get trials pickle (all data e1_e2 is experiments 1 and d2)
 with open(os.path.join(cur_dir,"pickles/all_data_e1_e2.p"), "rb" ) as f:
     trials = pickle.load( f, encoding='latin1' )
 
-# get best params pickle
-# pickle can be "pickles/best_params_all_data_e1_e2.p", "pickles/best_params_nosofsky1986.p"
 # get best params pickle
 with open(os.path.join(cur_dir,"pickles/chtc_gs_best_params_all_data_e1_e2.p"), "rb" ) as f:
     best_params_t = pickle.load( f , encoding='latin1')

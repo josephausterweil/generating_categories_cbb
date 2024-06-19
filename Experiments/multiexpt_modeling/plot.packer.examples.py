@@ -2,7 +2,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 from itertools import product
 
-execfile('Imports.py')
+import os
+
+def compile_file(filename):
+	with open(filename, encoding='utf-8') as f:
+		return compile(f.read(), filename, 'exec')
+	
+cur_dir = 'Experiments/multiexpt_modeling/'
+exec(compile_file(os.path.join(cur_dir,'Imports.py')))
+
 from Modules.Classes import Packer
 import Modules.Funcs as funcs
 
@@ -35,7 +43,7 @@ for i, k in enumerate(['Contrast Influence', 'Target Influence', 'Combination'])
     h = ax[i]
 
     ps = m.get_generation_ps(space,1)
-    print max(ps)
+    print(max(ps))
 
     g = funcs.gradientroll(ps, 'roll')[:,:,0]
     im = funcs.plotgradient(h, g, A, B, cmap = 'Blues', beta_col = 'w')
@@ -63,7 +71,4 @@ cbar.tick_params(length = 0)
 
 
 fname = 'packer-examples'
-f.savefig('packer-examples.pdf', bbox_inches='tight', transparent=True)
-
-path = '../../Manuscripts/cog-psych/revision/figs/packer-examples.pgf'
-funcs.save_as_pgf(f, path)
+f.savefig(os.path.join(cur_dir, fname+'.pdf'), bbox_inches='tight', transparent=True)

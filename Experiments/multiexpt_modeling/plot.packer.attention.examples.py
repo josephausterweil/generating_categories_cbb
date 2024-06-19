@@ -1,8 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from itertools import product
+import os
 
-execfile('Imports.py')
+def compile_file(filename):
+	with open(filename, encoding='utf-8') as f:
+		return compile(f.read(), filename, 'exec')
+	
+cur_dir = 'Experiments/multiexpt_modeling/'
+exec(compile_file(os.path.join(cur_dir,'Imports.py')))
+
 from Modules.Classes import Packer
 import Modules.Funcs as funcs
 
@@ -37,7 +44,7 @@ for i, k in enumerate(['X','Y','Even']):
     h = ax[i]
 
     ps = m.get_generation_ps(space,1)
-    print max(ps)
+    print(max(ps))
 
     g = funcs.gradientroll(ps, 'roll')[:,:,0]
     im = funcs.plotgradient(h, g, A, B, cmap = 'Blues', beta_col = 'w')
@@ -61,7 +68,5 @@ cbar.set_yticklabels(['Lowest\nProbability', 'Greatest\nProbability'])
 cbar.tick_params(length = 0)
 
 
-f.savefig('packer-attention-examples.png', bbox_inches='tight', transparent=False)
+f.savefig(os.path.join(cur_dir,'packer-attention-examples2.png'), bbox_inches='tight', transparent=False)
 
-path = '../../Manuscripts/cog-psych/revision/figs/packer-attention-examples.pgf'
-funcs.save_as_pgf(f, path)
