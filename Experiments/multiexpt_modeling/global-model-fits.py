@@ -28,7 +28,7 @@ import numpy as np
 #np.random.seed(9001)
 
 # Specify default dataname
-dataname_def = 'pooled'#'pooled-no1st'#'nosofsky1986'#'NGPMG1994'pooled
+dataname_def = 'pooled'#'pooled-no1st'
 participant_def = 'all'
 unique_trials_def = 'all'
 
@@ -75,7 +75,7 @@ options = dict(
 ) 
 
 results = dict()
-for model_obj in [ConjugateJK13]:#[ConjugateJK13,RepresentJK13,CopyTweak,Packer]:# [ConjugateJK13, CopyTweak, Packer]:
+for model_obj in [ConjugateJK13,RepresentJK13,CopyTweak,Packer]:
     res = Simulation.hillclimber(model_obj, trials, options,results=True,callbackstyle='.')
     X = model_obj.params2dict(model_obj.clipper(res.x))
     results[model_obj.model] = X

@@ -1,3 +1,4 @@
 Figure 2: plot.hbm.examples.py
+Table 2 (Model-based analysis of Experiments 1 and 2): global-model-fits.py
 Figure 12: plot_packer_loglike.py
 Figure 13: plt.packer.attention.examples.py
