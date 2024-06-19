@@ -8,3 +8,4 @@ Figures 16 and 17: plot_first_betas_corner.py
     Note that Shepard circles for the Stimulus space of Figure 17 were manually added  
 Figure 19: plot_firstbetas_cornerbehav.py
 Figure 20: plot_firstbetas_cornerbehav.py
+Figure 21: plot_first_betas_corner_fit.py
