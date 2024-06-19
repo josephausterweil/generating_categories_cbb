@@ -9,3 +9,5 @@ Figures 16 and 17: plot_first_betas_corner.py
 Figure 19: plot_firstbetas_cornerbehav.py
 Figure 20: plot_firstbetas_cornerbehav.py
 Figure 21: plot_first_betas_corner_fit.py
+Table 3: print_gs_results.py
+    Note this prints the overall best fitting parameters for all participants for the data set and model involved. chtc_gs_best_params_corner.p has the one for Table 3 (corner is an alias for Experiment 3). The Negated models are alternatives we were exploring for future modeling development that did not make it into the current article. 
