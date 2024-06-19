@@ -2,3 +2,7 @@ Figure 2: plot.hbm.examples.py
 Table 2 (Model-based analysis of Experiments 1 and 2): global-model-fits.py
 Figure 12: plot_packer_loglike.py
 Figure 13: plt.packer.attention.examples.py
+Figure 14: plot-stats-gradients.py
+Figure 15: plot_first_betas.py
+Figure 19: plot_firstbetas_cornerbehav.py
+Figure 20: plot_firstbetas_cornerbehav.py

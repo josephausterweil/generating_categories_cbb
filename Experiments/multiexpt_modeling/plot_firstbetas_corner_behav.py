@@ -1,4 +1,3 @@
-#reproducing plot_1stbetasCornerBehav.ipynb as python script
 #Can we get plots of first betas?
 #Shows each individual plot along with which model best fits itimport pickle, math
 import pickle,math
@@ -16,7 +15,7 @@ def compile_file(filename):
 	with open(filename, encoding='utf-8') as f:
 		return compile(f.read(), filename, 'exec')
 
-cur_dir = 'Experiments/cogpsych_code'
+cur_dir = 'Experiments/multiexpt_modeling'
 
 exec(compile_file(os.path.join(cur_dir,'Imports.py')))
 exec(compile_file(os.path.join(cur_dir,'ImportModels.py')))
@@ -147,7 +146,7 @@ cbar.tick_params(length = 0)
 plt.show()
 
 if saveplots:
-    plt.savefig('private/firstbetas_cornerbehav.pdf',bbox_inches='tight')
+    plt.savefig(os.path.join(cur_dir,'firstbetas_cornerbehav.pdf'),bbox_inches='tight')
 
 #last cell for manuscript
 #Get distances from center
