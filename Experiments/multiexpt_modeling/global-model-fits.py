@@ -3,6 +3,8 @@ import pandas as pd
 import pickle_compat
 import os
 
+#this sometimes can find local maxima
+
 pickle_compat.patch()
 
 from io import open

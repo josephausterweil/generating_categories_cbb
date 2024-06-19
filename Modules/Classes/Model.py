@@ -411,7 +411,10 @@ class Exemplar(Model):
 
         """
         # set weights and c
-        ax_range = self.stimrange[0]['max'] - self.stimrange[0]['min']
+        if type(self.stimrange[0]) is list:
+            ax_range = self.stimrange[0][0]['max'] - self.stimrange[0][0]['min']
+        else:
+            ax_range = self.stimrange[0]['max'] - self.stimrange[0]['min']
         ax_step = self.stimstep[0]
         if wts is None: wts = self.wts
         if c is None: c = self.specificity

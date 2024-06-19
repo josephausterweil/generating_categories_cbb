@@ -1,14 +1,29 @@
 import numpy as np
 import pandas as pd
-pd.set_option('precision', 3)
-np.set_printoptions(precision = 3)
+import pickle
+import pickle_compat
+pickle_compat.patch()
+# pd.set_option('precision', 3)
+# np.set_printoptions(precision = 3)
 
 import sqlite3
 import pickle
 from scipy.ndimage.filters import gaussian_filter
 import matplotlib.pyplot as plt
 # custom modules
-execfile('Imports.py')
+
+
+import os
+
+def compile_file(filename):
+	with open(filename, encoding='utf-8') as f:
+		return compile(f.read(), filename, 'exec')
+
+cur_dir = 'Experiments/multiexpt_modeling/'
+
+exec(compile_file(os.path.join(cur_dir,'Imports.py')))
+
+
 from Modules.Classes import CopyTweak, Packer, ConjugateJK13, RepresentJK13, CopyTweakRep
 import Modules.Funcs as funcs
 
@@ -32,13 +47,20 @@ fontsettings = dict(fontsize = 12.0)
 col_order = ['Behavioral', 'PACKER', 'Copy and Tweak','Hierarchical Sampling With Representativeness', 'Hierarchical Sampling']
 #col_order = ['Hierarchical Sampling With Representativeness']
 col_names_short = ['Behavioral', 'PACKER', 'Copy & Tweak','Representativeness', 'Hier. Bayes']
-row_order = ['Corner_S','Corner_C']#['Cluster','Row', 'XOR', 'Bottom', 'Middle']
+row_order = ['Cluster','Row', 'XOR', 'Bottom', 'Middle'] #['Corner_S','Corner_C']
 SMOOTHING_PARAM = 0.8
 
-dbname = 'experiment-corner.db'#'experiments-5con.db'#raw data
-dataname = '5con'#'5con'#bestparms comes from here
+#dbname = 'experiments-5con.db'#'experiment-corner.db'#raw data
+#dataname = '5con'#'5con'#bestparms comes from here
 
-execfile('validate_data.py') #get path to param pickle
+dbname = 'experiments-pooled.db'#'experiment-corner.db'#raw data
+dataname = 'pooled'#'5con'#bestparms comes from here
+
+
+#execfile('validate_data.py') #get path to param pickle
+
+exec(compile_file(os.path.join(cur_dir,'validate_data.py')))
+
 
 if dbname=='experiments-pooled.db':
     e1e2mark = True #Add plot grouping markers or not?
@@ -46,12 +68,12 @@ else:
     e1e2mark = False
 
 # import data
-con = sqlite3.connect(dbname)
+con = sqlite3.connect(os.path.join(cur_dir,dbname))
 info = pd.read_sql_query("SELECT * from participants", con)
 stats = pd.read_sql_query("SELECT * from betastats", con)
 generation = pd.read_sql_query("SELECT * from generation", con)
 alphas = pd.read_sql_query("SELECT * from alphas", con)
-stimuli = pd.read_sql_query("SELECT * from stimuli", con).as_matrix()
+stimuli = pd.read_sql_query("SELECT * from stimuli", con).to_numpy()
 con.close()
 
 # get 'observed' dataframe with columns:
@@ -66,8 +88,8 @@ all_data = dict(Behavioral = observed)
 
 
 # get best params pickle
-with open("pickles/chtc_gs_best_params_{}".format(src), "rb" ) as f:
-    best_params_t = pickle.load( f )
+with open(os.path.join(cur_dir,"pickles/chtc_gs_best_params_{}".format(src)), "rb" ) as f:
+    best_params_t = pickle.load( f ,encoding='latin1')
 
 #Rebuild it into a smaller dict
 best_params = dict()
@@ -87,7 +109,7 @@ name_2_object = {
 
 # conduct simulations
 for model_name, model_obj in name_2_object.items():
-    print 'Running: ' + model_obj.model
+    print('Running: ' + model_obj.model)
     params  = best_params[model_name]
 
     model_data = pd.DataFrame(columns = ['condition','stimulus',STAT_OF_INTEREST])
@@ -117,11 +139,11 @@ for model_name, model_obj in name_2_object.items():
         # simulate
         model = model_obj([As], params,funcs.getrange(stimuli))
         for j in range(N_SAMPLES):   
-            nums = model.simulate_generation(stimuli, 1, nexemplars = 4,wrap_ax=wrap_ax)
+            nums = model.simulate_generation(stimuli, 1, nexemplars = 4)
             model.forget_category(1)
 
             # run stats battery
-            all_stats = funcs.stats_battery(stimuli[nums,:], As,wrap_ax = wrap_ax)
+            all_stats = funcs.stats_battery(stimuli[nums,:], As)
 
             # convert to row for df
             # handle variable number of generated exemplars
@@ -131,7 +153,7 @@ for model_name, model_obj in name_2_object.items():
             
             model_data = model_data.append(pd.DataFrame(rows), ignore_index = True)
 
-        print '\t' + str(i)
+        print('\t' + str(i))
         
     # aggregate over simulations, add to all data
     model_data = model_data.groupby(['condition','stimulus'])[STAT_OF_INTEREST]
@@ -156,11 +178,11 @@ for rownum, c in enumerate(row_order):
         # compute color value of each example
         vals = np.zeros(stimuli.shape[0])
         for i, row in df.groupby('stimulus'):
-            n = row['size'].as_matrix()
-            sumx = row['mean'].as_matrix() * n
+            n = row['size'].to_numpy()
+            sumx = row['mean'].to_numpy() * n
             vals[int(i)] = (PRIOR_NU * PRIOR_MU +  sumx) / (PRIOR_NU + n)
 
-        print c, colnum, min(vals), max(vals)
+        print(c, colnum, min(vals), max(vals))
 
         # smoothing
         g = funcs.gradientroll(vals,'roll')[:,:,0]
@@ -201,7 +223,7 @@ cbar.tick_params(length = 0)
 plt.tight_layout(w_pad=-2.0, h_pad= .5)
 
 fname = 'gradients-t-' + STAT_OF_INTEREST
-f.savefig(fname + '.pdf', bbox_inches='tight', transparent=False)
+f.savefig(os.path.join(cur_dir,fname + '.pdf'), bbox_inches='tight', transparent=False)
 #f.savefig(fname + '.png', bbox_inches='tight', transparent=False)
 
 #path = '../../Manuscripts/cog-psych/revision/figs/range-diff-gradients.pgf'
